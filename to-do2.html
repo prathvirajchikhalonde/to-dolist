@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced To-Do List</title>
+    <style>
+        body {
+            background-color: rgb(15, 185, 232);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+        .container {
+            background-color: rgb(241, 76, 156);
+            border-radius: 8px;
+            padding: 20px;
+            width: 350px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="color"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: grey;
+        }
+        .remove-btn, .edit-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .remove-btn:hover, .edit-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>To-Do List</h1>
+        <input type="text" id="taskInput" placeholder="Add a new task...">
+        <input type="color" id="bgColorPicker" title="Choose Background Color" />
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        // Function to add a new task
+        function addTask() {
+            let taskInput = document.getElementById('taskInput');
+            let taskValue = taskInput.value.trim();
+            if (taskValue !== "") {
+                let taskList = document.getElementById('taskList');
+
+                // Create a new list item
+                let li = document.createElement('li');
+                
+                // Create a span to hold the task text
+                let taskSpan = document.createElement('span');
+                taskSpan.textContent = taskValue;
+
+                // Create a button to remove the task
+                let removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Delete';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.onclick = function() {
+                    taskList.removeChild(li);
+                    saveTasks(); // Save after removing a task
+                };
+
+                // Create a button to edit the task
+                let editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.classList.add('edit-btn');
+                editBtn.onclick = function() {
+                    let newTask = prompt("Edit your task:", taskSpan.textContent);
+                    if (newTask !== null && newTask.trim() !== "") {
+                        taskSpan.textContent = newTask;
+                        saveTasks(); // Save after editing a task
+                    }
+                };
+
+                // Add functionality to mark the task as completed
+                taskSpan.onclick = function() {
+                    taskSpan.classList.toggle('completed');
+                    saveTasks(); // Save after completing a task
+                };
+
+                // Append the span and buttons to the list item
+                li.appendChild(taskSpan);
+                li.appendChild(editBtn);
+                li.appendChild(removeBtn);
+
+                // Append the list item to the task list
+                taskList.appendChild(li);
+
+                // Clear the input field after adding the task
+                taskInput.value = "";
+
+                saveTasks(); // Save after adding a task
+            } else {
+                alert("Please enter a task!");
+            }
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            let taskList = document.getElementById('taskList');
+            let tasks = [];
+            let taskItems = taskList.querySelectorAll('li');
+            taskItems.forEach(item => {
+                let taskText = item.querySelector('span').textContent;
+                let isCompleted = item.querySelector('span').classList.contains('completed');
+                tasks.push({ text: taskText, completed: isCompleted });
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Load tasks from localStorage
+        function loadTasks() {
+            let savedTasks = JSON.parse(localStorage.getItem('tasks'));
+            if (savedTasks) {
+                savedTasks.forEach(task => {
+                    let taskList = document.getElementById('taskList');
+                    let li = document.createElement('li');
+
+                    let taskSpan = document.createElement('span');
+                    taskSpan.textContent = task.text;
+                    if (task.completed) {
+                        taskSpan.classList.add('completed');
+                    }
+
+                    let removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'Delete';
+                    removeBtn.classList.add('remove-btn');
+                    removeBtn.onclick = function() {
+                        taskList.removeChild(li);
+                        saveTasks(); // Save after removing a task
+                    };
+
+                    let editBtn = document.createElement('button');
+                    editBtn.textContent = 'Edit';
+                    editBtn.classList.add('edit-btn');
+                    editBtn.onclick = function() {
+                        let newTask = prompt("Edit your task:", taskSpan.textContent);
+                        if (newTask !== null && newTask.trim() !== "") {
+                            taskSpan.textContent = newTask;
+                            saveTasks(); // Save after editing a task
+                        }
+                    };
+
+                    taskSpan.onclick = function() {
+                        taskSpan.classList.toggle('completed');
+                        saveTasks(); // Save after completing a task
+                    };
+
+                    li.appendChild(taskSpan);
+                    li.appendChild(editBtn);
+                    li.appendChild(removeBtn);
+
+                    taskList.appendChild(li);
+                });
+            }
+        }
+
+        // Change background color based on the color picker
+        document.getElementById('bgColorPicker').addEventListener('input', function(event) {
+            document.body.style.backgroundColor = event.target.value;
+        });
+
+        // Load saved tasks when the page loads
+        window.onload = loadTasks;
+    </script>
+
+</body>
+</html>
